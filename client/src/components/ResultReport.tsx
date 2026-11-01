@@ -81,10 +81,12 @@ export function ResultReport({ detail, audience, onPractice, practising, celebra
         </Card>
 
         <Card className="lg:col-span-2">
-          <CardHeader title="Topic mastery now" description={detail.before ? "Before → after this attempt" : "Updated from all recent answers"} />
+          <CardHeader title="Topic mastery now" description={detail.before ? "Before → after this attempt" : "As of today"} />
           <div className="space-y-4 p-5 sm:p-6">
             {detail.gaps.map((g) => {
-              const prev = before.get(g.topicId) ?? g.previousMastery;
+              // Before → after is only meaningful right after submitting; for an older result the
+              // stored previous value belongs to a later attempt, so just show current mastery.
+              const prev = detail.before ? (before.get(g.topicId) ?? null) : undefined;
               return (
                 <div key={g.topicId}>
                   <div className="flex items-center justify-between gap-2">
@@ -96,7 +98,9 @@ export function ResultReport({ detail, audience, onPractice, practising, celebra
                     <span className="text-sm font-bold text-ink">{Math.round(g.mastery)}%</span>
                   </div>
                   <div className="mt-1 text-xs text-slate-500">
-                    {prev !== null && prev !== undefined ? (
+                    {prev === undefined ? (
+                      "Current mastery from all your recent answers"
+                    ) : prev !== null ? (
                       <span className="inline-flex items-center gap-2">was {Math.round(prev)}% <Trend value={g.mastery - prev} /></span>
                     ) : (
                       "First assessment on this topic"

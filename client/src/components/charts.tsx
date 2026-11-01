@@ -71,7 +71,7 @@ export function ThenNowBars({ data, height = 260 }: { data: { name: string; then
         <YAxis domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} {...axis} tickFormatter={(v: number) => `${v}%`} />
         <Tooltip content={<ChartTooltip />} cursor={{ fill: "#f8fafc" }} />
         <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
-        <Bar dataKey="then" name="First attempts" fill="#c7d2fe" radius={[4, 4, 0, 0]} maxBarSize={22} />
+        <Bar dataKey="then" name="After first attempt" fill="#c7d2fe" radius={[4, 4, 0, 0]} maxBarSize={22} />
         <Bar dataKey="now" name="Mastery now" fill="#4f46e5" radius={[4, 4, 0, 0]} maxBarSize={22} />
       </BarChart>
     </ResponsiveContainer>

@@ -13,12 +13,16 @@ export type AnswerRecord = {
   difficulty: Difficulty;
   isCorrect: boolean;
   answeredAt: Date;
+  /** Attempt the answer belongs to. Answers from the same attempt count as equally recent. */
+  resultId?: number;
+  /** Row id, used only as a deterministic tie-break between equal timestamps. */
+  answerId?: number;
 };
 
 export const DIFFICULTY_WEIGHT: Record<Difficulty, number> = { easy: 1, medium: 1.5, hard: 2 };
 /** How many of the most recent answers per topic count towards mastery. */
 export const MASTERY_WINDOW = 8;
-/** Each step back in time counts this much less than the answer after it. */
+/** Each earlier attempt counts this much less than the attempt after it. */
 export const RECENCY_DECAY = 0.85;
 export const STRONG_THRESHOLD = 75;
 export const WEAK_THRESHOLD = 50;
@@ -40,19 +44,29 @@ export type TopicMastery = {
 /**
  * Mastery for one topic: a difficulty- and recency-weighted share of correct answers
  * over the student's most recent MASTERY_WINDOW answers. Getting a hard question
- * right counts double an easy one; older answers fade so improvement shows up.
+ * right counts double an easy one; older attempts fade so improvement shows up.
+ * Answers within one attempt share a timestamp, so they get the same recency weight,
+ * and ties are broken by row id so the result never depends on database row order.
  */
 export function topicMastery(topicId: number, answers: AnswerRecord[]): TopicMastery | null {
   const recent = answers
     .filter((a) => a.topicId === topicId)
-    .sort((a, b) => b.answeredAt.getTime() - a.answeredAt.getTime())
+    .sort((a, b) => b.answeredAt.getTime() - a.answeredAt.getTime() || (b.answerId ?? 0) - (a.answerId ?? 0))
     .slice(0, MASTERY_WINDOW);
   if (recent.length === 0) return null;
+
+  // Recency rank per attempt (newest attempt = 0). Answers without a resultId are their own attempt.
+  const attemptRank = new Map<string, number>();
+  const rankOf = (a: AnswerRecord, i: number) => {
+    const key = a.resultId !== undefined ? `r${a.resultId}` : `a${i}`;
+    if (!attemptRank.has(key)) attemptRank.set(key, attemptRank.size);
+    return attemptRank.get(key)!;
+  };
 
   let earned = 0;
   let possible = 0;
   recent.forEach((a, i) => {
-    const w = DIFFICULTY_WEIGHT[a.difficulty] * Math.pow(RECENCY_DECAY, i);
+    const w = DIFFICULTY_WEIGHT[a.difficulty] * Math.pow(RECENCY_DECAY, rankOf(a, i));
     possible += w;
     if (a.isCorrect) earned += w;
   });

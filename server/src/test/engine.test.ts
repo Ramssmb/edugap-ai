@@ -44,6 +44,23 @@ describe("topicMastery", () => {
     expect(declining.mastery).toBeLessThan(50);
   });
 
+  it("weights answers from the same attempt equally, whatever order they arrive in", () => {
+    const at = new Date(t0);
+    const a = { questionId: 1, topicId: 1, concept: "A", difficulty: "medium" as const, answeredAt: at, resultId: 7 };
+    const right = { ...a, isCorrect: true, answerId: 1 };
+    const wrong = { ...a, questionId: 2, isCorrect: false, answerId: 2 };
+    // Same attempt: one right, one wrong, equal difficulty -> exactly 50%, in either order.
+    expect(topicMastery(1, [right, wrong])!.mastery).toBe(50);
+    expect(topicMastery(1, [wrong, right])!.mastery).toBe(50);
+  });
+
+  it("decays by attempt, not by answer position", () => {
+    const old = { questionId: 1, topicId: 1, concept: "A", difficulty: "medium" as const, answeredAt: new Date(t0), resultId: 1, isCorrect: false };
+    const newer = [2, 3].map((i) => ({ ...old, questionId: i, answeredAt: new Date(t0 + 60_000), resultId: 2, isCorrect: true, answerId: i }));
+    // Two correct answers in the newest attempt (weight 1 each) + one wrong answer one attempt older (0.85).
+    expect(topicMastery(1, [{ ...old, answerId: 1 }, ...newer])!.mastery).toBe(Math.round((2 / 2.85) * 1000) / 10);
+  });
+
   it("only counts the 8 most recent answers", () => {
     const old = Array.from({ length: 10 }, (_, i) => ans(i, false));
     const recent = Array.from({ length: 8 }, (_, i) => ans(100 + i, true));

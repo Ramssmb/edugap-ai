@@ -24,7 +24,9 @@ export default function ProgressPage() {
     );
 
   const history = data.history.filter((h) => subject === "all" || String(h.subjectId) === subject);
-  const chronological = [...data.history].reverse();
+  // Practice sets deliberately target weak concepts, so they'd drag this average down; compare
+  // diagnostics and teacher assessments only.
+  const chronological = [...data.history].reverse().filter((h) => h.kind !== "practice");
   const half = Math.max(1, Math.floor(chronological.length / 2));
   const earlyAvg = average(chronological.slice(0, half).map((h) => h.percent ?? 0));
   const recentAvg = average(chronological.slice(half).map((h) => h.percent ?? 0));
@@ -38,7 +40,7 @@ export default function ProgressPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Current streak" value={`${data.streak} day${data.streak === 1 ? "" : "s"}`} icon={<Flame className="h-5 w-5" />} accent="amber" />
         <StatCard label="Assessments taken" value={data.history.length} icon={<History className="h-5 w-5" />} />
-        <StatCard label="Average score: earlier → recent" value={<span className="flex items-baseline gap-2">{pct(earlyAvg)} <span className="text-slate-300">→</span> {pct(recentAvg)}</span>} icon={<ArrowUpRight className="h-5 w-5" />} accent="green" hint={earlyAvg !== null && recentAvg !== null ? <Trend value={recentAvg - earlyAvg} /> : undefined} />
+        <StatCard label="Assessment average: earlier → recent" value={<span className="flex items-baseline gap-2">{pct(earlyAvg)} <span className="text-slate-300">→</span> {pct(recentAvg)}</span>} icon={<ArrowUpRight className="h-5 w-5" />} accent="green" hint={earlyAvg !== null && recentAvg !== null && chronological.length >= 2 ? <span className="flex items-center gap-2"><Trend value={recentAvg - earlyAvg} /> diagnostics &amp; assigned, excluding practice</span> : "Needs two diagnostics or assigned assessments"} />
         <StatCard label="Topics improved" value={improved.length} icon={<BarChart3 className="h-5 w-5" />} accent="violet" hint={improved.slice(0, 2).map((c) => c.topicName).join(", ") || "Keep practising"} />
       </div>
 
@@ -78,7 +80,7 @@ export default function ProgressPage() {
 
       <div className="grid gap-6 lg:grid-cols-5">
         <Card className="lg:col-span-3">
-          <CardHeader title="Then vs now" description="Accuracy on your first attempts at each topic compared with your mastery today" icon={<BarChart3 className="h-5 w-5" />} />
+          <CardHeader title="Then vs now" description="Your mastery after your first assessment on each topic, compared with your mastery today" icon={<BarChart3 className="h-5 w-5" />} />
           <div className="p-3 sm:p-5">
             <ThenNowBars data={data.comparison.slice(0, 8).map((c) => ({ name: c.topicName, then: c.then, now: c.now }))} />
           </div>
@@ -131,7 +133,7 @@ export default function ProgressPage() {
               <tr>
                 <th className="px-3 py-2 font-semibold">Topic</th>
                 <th className="px-3 py-2 font-semibold">Subject</th>
-                <th className="px-3 py-2 font-semibold">First attempts</th>
+                <th className="px-3 py-2 font-semibold">After first attempt</th>
                 <th className="px-3 py-2 font-semibold">Now</th>
                 <th className="px-3 py-2 font-semibold">Change</th>
                 <th className="px-3 py-2 font-semibold">Status</th>

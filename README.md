@@ -100,7 +100,7 @@ Browser ──/api──▶ Express ──▶ routes (auth · student · tutor �
 
 Every question carries a **topic**, a **difficulty** and the **concept** it tests (e.g. *Fractions → "Adding unlike denominators"*).
 
-- **Mastery per topic** = difficulty- and recency-weighted share of correct answers over the student's 8 most recent answers on that topic (hard = 2×, medium = 1.5×, easy = 1×; each older answer counts 0.85× the one after it). Improvement therefore shows up quickly, and one lucky easy answer can't mask a gap.
+- **Mastery per topic** = difficulty- and recency-weighted share of correct answers over the student's 8 most recent answers on that topic (hard = 2×, medium = 1.5×, easy = 1×; each older *attempt* counts 0.85× the attempt after it, and answers from the same attempt weigh the same). Improvement therefore shows up quickly, and one lucky easy answer can't mask a gap. The result is deterministic: ties are broken by answer id, never by database row order.
 - **Classification:** ≥ 75% *strong*, 50–74% *needs improvement*, < 50% *weak*.
 - **Weak concepts:** a concept is flagged when it's missed at least half the time, or was missed on the latest attempt.
 - **Adaptive selection:** diagnostics split questions evenly across topics (extra questions go to the weakest), prefer the student's weak concepts, match difficulty to current mastery, and avoid recently seen questions.
@@ -136,9 +136,9 @@ Every AI call has a deterministic fallback: no key, network error, rate limit, r
 
 ## Testing results
 
-Run `npm test`. **42 tests, all passing** (2 files):
+Run `npm test`. **70 tests, all passing** (4 files):
 
-- **Engine unit tests (15):** classification thresholds, difficulty weighting, recency, 8-answer window, weak-concept detection, grading of invalid/missing answers, adaptive selection (quotas, weak concepts first, avoiding seen questions), recommendation ordering, lesson-studied logic, streaks.
+- **Engine unit tests (17):** classification thresholds, difficulty weighting, recency, 8-answer window, weak-concept detection, grading of invalid/missing answers, adaptive selection (quotas, weak concepts first, avoiding seen questions), recommendation ordering, lesson-studied logic, streaks.
 - **API integration tests (27)**, against a fresh in-memory Postgres with the full demo seed:
   - the **complete 9-step demo flow**: diagnostic → server-side scoring (exact score asserted) → weak-concept detection → recommendations → lesson completion → practice → improvement on the dashboard → teacher sees the identical updated mastery;
   - auth: wrong password, CSRF header required, registration validation, duplicate email, no admin self-registration, teacher approval flow, password change signs out other sessions, deactivation ends access immediately;
@@ -148,13 +148,18 @@ Run `npm test`. **42 tests, all passing** (2 files):
 
 Manual browser verification (desktop and 375px mobile): landing, sign-in (one-click demo), student dashboard, assessment taking with keyboard shortcuts, results review, lesson completion, practice, learning plan, tutor (Hindi), progress, teacher overview/roster/student detail/assessment creation, admin overview/content (form validation), settings. No horizontal overflow on any student route at 375px; no console errors in the production build. A production build was started with `NODE_ENV=production` and verified (SPA routing, CSP headers, sign-in).
 
-See **[docs/QA-REPORT.md](docs/QA-REPORT.md)** for the audit: every issue found and how it was fixed.
+- **Functional audit tests (20)** — verify against the database itself, with an independent re-implementation of the mastery formula: the 10-step workflow with stored rows checked after each step; consistency of all demo data (scores vs stored answers, every gap recomputed, recommendations only for non-strong topics); a permission matrix over every route × role (anonymous 401, wrong role 403, missing CSRF header 403, other student/class 404); dashboard and admin statistics vs direct aggregates.
+- **AI integration tests (6)** — the real SDK against a local stand-in for the Claude API: request shape (model, `fallbacks`, beta header, structured-output schema, gap data in the prompt), parsing, validation of generated questions, and fallback on refusal / API error.
+
+See **[docs/QA-REPORT.md](docs/QA-REPORT.md)** and **[docs/FUNCTIONAL-AUDIT.md](docs/FUNCTIONAL-AUDIT.md)** for the audits: every issue found and how it was fixed.
 
 ---
 
 ## Known limitations
 
-- **Live Claude responses were not exercised** during development (no API key was available). The AI code path is type-checked against the SDK, and the failure path was verified with an invalid key (it falls back cleanly). Set `ANTHROPIC_API_KEY` to enable it.
+- **Live Claude responses have not been reviewed** (no API key was available). The integration is tested end to end against a local stand-in for the API, and against the real API with an invalid key (it falls back cleanly), but the quality of real generated content is unverified. Set `ANTHROPIC_API_KEY` to enable it.
+- **AI-generated practice questions count towards mastery.** They are validated structurally (4 distinct options, valid answer index, known concept), but a wrong answer key from the model would mark a correct student wrong. Consider teacher review or a lower weight before relying on them.
+- `npm audit` reports 4 moderate advisories, all from an old esbuild bundled inside `drizzle-kit` (a dev-only migration generator; the advisory concerns esbuild's dev server, which it never starts). npm's suggested fix downgrades drizzle-kit and would break migration generation, so it is intentionally not applied.
 - **Offline multilingual tutoring is partial:** Hindi/Punjabi/Telugu get a translated topic summary and UI labels; the detailed steps stay in English (the reply says so). With Claude enabled, whole answers are translated.
 - **Question bank size:** 6 curated questions per topic. Repeated diagnostics eventually reuse questions, and students see correct answers in their review, so a determined student can memorise them. With a key, practice sets get fresh AI-generated questions.
 - **Embedded database is single-process** (fine for demos); use `DATABASE_URL` with PostgreSQL for real deployments.

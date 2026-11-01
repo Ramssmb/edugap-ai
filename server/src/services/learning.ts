@@ -18,6 +18,8 @@ export async function loadAnswers(studentId: number, topicIds?: number[]): Promi
     : eq(studentAnswers.studentId, studentId);
   const rows = await db()
     .select({
+      answerId: studentAnswers.id,
+      resultId: studentAnswers.resultId,
       questionId: studentAnswers.questionId,
       topicId: studentAnswers.topicId,
       isCorrect: studentAnswers.isCorrect,

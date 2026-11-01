@@ -1,6 +1,7 @@
 import { and, eq, inArray, desc, isNotNull, gte, asc } from "drizzle-orm";
 import { db, schema } from "../db/index.js";
-import { average, computeStreak, dayKey } from "./engine.js";
+import { average, computeStreak, dayKey, topicMastery } from "./engine.js";
+import { loadAnswers } from "./learning.js";
 import type { GapForReport } from "./fallback.js";
 
 const { users, studentProfiles, classes, subjects, topics, knowledgeGaps, assessmentResults, assessments, studentAnswers, lessonProgress, lessons, recommendations, progressRecords } = schema;
@@ -187,27 +188,24 @@ export async function studentProgress(studentId: number, now = new Date()) {
     return row;
   });
 
-  // Then vs now: accuracy on a topic's first 4 answers compared with current mastery.
+  // Then vs now: mastery after the first attempt on each topic vs mastery today,
+  // both computed with the same formula so the two numbers are comparable.
   const gaps = await gapsWithNames(studentId);
-  const firstAnswers = await db()
-    .select({ topicId: studentAnswers.topicId, isCorrect: studentAnswers.isCorrect, answeredAt: studentAnswers.answeredAt })
-    .from(studentAnswers)
-    .where(eq(studentAnswers.studentId, studentId))
-    .orderBy(asc(studentAnswers.answeredAt));
-  const firstByTopic = new Map<number, boolean[]>();
-  for (const a of firstAnswers) {
-    const arr = firstByTopic.get(a.topicId) ?? [];
-    if (arr.length < 4) arr.push(a.isCorrect);
-    firstByTopic.set(a.topicId, arr);
-  }
+  const allAnswers = await loadAnswers(studentId);
+  const firstAttempt = new Map<number, number>(); // topicId -> resultId of the earliest attempt
+  for (const a of [...allAnswers].sort((x, y) => x.answeredAt.getTime() - y.answeredAt.getTime() || (x.answerId ?? 0) - (y.answerId ?? 0)))
+    if (!firstAttempt.has(a.topicId) && a.resultId !== undefined) firstAttempt.set(a.topicId, a.resultId);
   const comparison = gaps
     .map((g) => {
-      const f = firstByTopic.get(g.topicId) ?? [];
+      const first = topicMastery(
+        g.topicId,
+        allAnswers.filter((a) => a.topicId === g.topicId && a.resultId === firstAttempt.get(g.topicId)),
+      );
       return {
         topicId: g.topicId,
         topicName: g.topicName,
         subjectName: g.subjectName,
-        then: f.length ? Math.round((f.filter(Boolean).length / f.length) * 100) : null,
+        then: first ? Math.round(first.mastery) : null,
         now: Math.round(g.mastery),
         status: g.status,
       };
