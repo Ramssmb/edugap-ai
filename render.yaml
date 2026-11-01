@@ -1,0 +1,26 @@
+# Render Blueprint: Dashboard -> New -> Blueprint -> pick this repository.
+# The database lives on Neon (free PostgreSQL); paste its connection string when asked.
+services:
+  - type: web
+    name: edugap-ai
+    runtime: docker
+    plan: free
+    region: singapore
+    branch: main
+    autoDeploy: true
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        sync: false # Neon connection string, entered in the Render dashboard
+      - key: JWT_SECRET
+        generateValue: true
+      - key: TRUST_PROXY
+        value: "1" # Render terminates HTTPS in front of the app
+      - key: SEED_DEMO_DATA
+        value: "true" # loads demo accounts into an empty database on first start
+      - key: DEMO_PASSWORD
+        sync: false # your private password for the demo accounts
+      - key: ANTHROPIC_API_KEY
+        sync: false # optional: leave empty for offline mode
+      - key: GOOGLE_SITE_VERIFICATION
+        sync: false # optional: the content value of Google Search Console's HTML tag

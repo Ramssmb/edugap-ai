@@ -26,5 +26,6 @@ COPY --from=build /app/client/dist client/dist
 RUN mkdir -p server/.data && chown -R node:node server/.data
 USER node
 EXPOSE 8080
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s CMD wget -qO- http://127.0.0.1:8080/api/health || exit 1
+# Hosts like Render override PORT, so the health check follows it.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s CMD wget -qO- "http://127.0.0.1:${PORT}/api/health" || exit 1
 CMD ["node", "server/dist/index.js"]

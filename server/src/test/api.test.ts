@@ -348,3 +348,29 @@ describe("admin", () => {
     expect(Object.keys(res.body.fields)).toEqual(expect.arrayContaining(["correctIndex"]));
   });
 });
+
+describe("search engine files", () => {
+  it("robots.txt allows public pages, blocks signed-in areas, and links the sitemap", async () => {
+    const res = await request(app).get("/robots.txt").set("Host", "edugap.example.com");
+    expect(res.status).toBe(200);
+    expect(res.text).toContain("Disallow: /student");
+    expect(res.text).toContain("Disallow: /api/");
+    expect(res.text).toContain("Sitemap: http://edugap.example.com/sitemap.xml");
+  });
+
+  it("sitemap.xml lists only public pages on the serving host", async () => {
+    const res = await request(app).get("/sitemap.xml").set("Host", "edugap.example.com");
+    expect(res.type).toMatch(/xml/);
+    expect(res.text).toContain("<loc>http://edugap.example.com/</loc>");
+    expect(res.text).toContain("<loc>http://edugap.example.com/register</loc>");
+    expect(res.text).not.toMatch(/student|teacher|admin/);
+  });
+
+  it("injects a valid Google verification token and rejects anything that could be markup", async () => {
+    const { renderIndexHtml } = await import("../app.js");
+    const html = "<html><head><title>x</title></head><body></body></html>";
+    expect(renderIndexHtml(html, "abcDEF123_-xyz789")).toContain('<meta name="google-site-verification" content="abcDEF123_-xyz789" />');
+    expect(renderIndexHtml(html, '"><script>alert(1)</script>')).toBe(html);
+    expect(renderIndexHtml(html, "")).toBe(html);
+  });
+});

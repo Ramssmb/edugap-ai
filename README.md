@@ -15,7 +15,7 @@ EduGap AI finds *exactly* what each student doesn't understand yet — down to t
 - **Teachers** see a class heatmap, the most common misconceptions, students needing attention, per-student reports, and can create and assign assessments with question-level analysis.
 - **Administrators** manage users and roles (including approving teacher accounts), classes, subjects, topics, lessons and the question bank, and monitor platform statistics and activity.
 
-**Contents:** [Quick start](#quick-start) · [Docker](#docker) · [Demo accounts](#demo-accounts) · [Architecture](#architecture) · [Testing](#testing-results) · [Known limitations](#known-limitations) · [Contributing](#contributing)
+**Contents:** [Quick start](#quick-start) · [Docker](#docker) · [Deploy live](#deploy-live-free) · [Demo accounts](#demo-accounts) · [Architecture](#architecture) · [Testing](#testing-results) · [Known limitations](#known-limitations) · [Contributing](#contributing)
 
 ---
 
@@ -51,6 +51,16 @@ JWT_SECRET=$(openssl rand -hex 32) docker compose up --build
 
 Open **http://localhost:8080**. The compose file sets `SEED_DEMO_DATA=true` so the demo accounts work; remove it for a real deployment. The image (`Dockerfile`) is multi-stage, runs as a non-root user, and has a health check. CI builds it and smoke-tests it on every push. Production cookies are `Secure`, so any host other than `localhost` must be served over HTTPS (see [SECURITY.md](SECURITY.md)).
 
+### Deploy live (free)
+
+The repository includes a Render Blueprint (`render.yaml`). Free stack: **Render** runs the Docker image, **Neon** provides PostgreSQL.
+
+1. **Neon** ([neon.tech](https://neon.tech)): create a free project (region: Singapore) and copy its connection string.
+2. **Render** ([render.com](https://render.com)): sign up with GitHub → **New → Blueprint** → choose this repository. When asked, paste the Neon string into `DATABASE_URL` and choose a private `DEMO_PASSWORD`. Leave `ANTHROPIC_API_KEY` empty for offline mode. Deploy.
+3. Open `https://<service-name>.onrender.com`. The first start creates the tables and loads the demo accounts (a few minutes).
+
+The free Render plan sleeps after 15 minutes without traffic; the next visit takes about a minute to wake it. The site serves `robots.txt` and `sitemap.xml` automatically. To appear in Google, add the site in [Google Search Console](https://search.google.com/search-console), choose the **HTML tag** verification method, put its `content` value into the `GOOGLE_SITE_VERIFICATION` setting on Render, verify, then submit `/sitemap.xml`.
+
 ### Environment
 
 Copy `.env.example` to `server/.env`. Everything is optional in development:
@@ -63,6 +73,8 @@ Copy `.env.example` to `server/.env`. Everything is optional in development:
 | `JWT_SECRET` | **Required in production** (32+ chars). In development one is generated and stored in `server/.data/`. |
 | `APP_TIMEZONE` | School timezone for daily goals and streaks (default `Asia/Kolkata`). |
 | `TRUST_PROXY` | Set (e.g. `1`) only when running behind a reverse proxy. |
+| `PUBLIC_URL` | Public address used in `robots.txt` / `sitemap.xml` (defaults to the request's host). |
+| `GOOGLE_SITE_VERIFICATION` | Google Search Console HTML-tag token; injected into the page head. |
 | `SEED_DEMO_DATA` | `true` to load demo data into an empty **production** database (off by default, because demo accounts share a known password). |
 | `API_PORT` / `PORT` | API port in development / production. |
 

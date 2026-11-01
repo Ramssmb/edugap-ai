@@ -5,6 +5,8 @@ All notable changes to this project are documented here. The format follows [Kee
 ## [Unreleased]
 
 ### Added
+- One-click deployment: Render Blueprint (`render.yaml`) for a free Render + Neon PostgreSQL setup.
+- Search engine support: `robots.txt` and `sitemap.xml` generated from the serving address, Open Graph / Twitter share tags, crawler fallback text, and Google Search Console verification via `GOOGLE_SITE_VERIFICATION`.
 - ESLint (TypeScript and React hooks rules), `.editorconfig`, `.gitattributes` and `.nvmrc`.
 - GitHub Actions CI: lint, typecheck, tests and build on Node 22 and 24; tests against a real PostgreSQL server; Docker image build and smoke test.
 - `Dockerfile` (multi-stage, non-root) and `docker-compose.yml` with PostgreSQL.
@@ -12,6 +14,8 @@ All notable changes to this project are documented here. The format follows [Kee
 - `npm run check` to run every quality gate locally.
 
 ### Changed
+- A custom `DEMO_PASSWORD` is no longer printed in server logs.
+- The Docker health check follows `PORT`, so it works when a host overrides the port.
 - Removed state-syncing effects flagged by the React hooks rules (mobile drawer, profile and lesson forms) in favour of adjusting state during render.
 - Split non-component exports out of component files so hot reload works reliably.
 - Test files reset the database they seed, so the suite can run against a shared PostgreSQL server.

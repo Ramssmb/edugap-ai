@@ -215,7 +215,9 @@ export async function seed({ reset }: { reset: boolean }) {
   }
 
   await logActivity(admin.id, "admin", "set up Grade 8-A and Grade 8-B", new Date(now - 36 * day));
-  console.log(`Seeded ${students.length} students, 2 teachers, 1 admin, ${curriculum.length} subjects. Demo password: ${DEMO_PASSWORD}`);
+  // Never print a custom password: hosting providers keep logs.
+  const passwordNote = process.env.DEMO_PASSWORD ? "Demo password: the DEMO_PASSWORD you set" : `Demo password: ${DEMO_PASSWORD}`;
+  console.log(`Seeded ${students.length} students, 2 teachers, 1 admin, ${curriculum.length} subjects. ${passwordNote}`);
 }
 
 // `npm run seed` resets and reseeds.

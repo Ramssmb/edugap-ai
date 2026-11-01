@@ -44,6 +44,10 @@ export const config = {
   aiModel: env.AI_MODEL || "claude-opus-5-5",
   // Only trust X-Forwarded-For when actually behind a proxy (e.g. TRUST_PROXY=1);
   // otherwise clients could spoof their IP to dodge rate limits.
+  // Public address of the site, used in robots.txt/sitemap.xml. Optional: defaults to the request's host.
+  publicUrl: env.PUBLIC_URL || "",
+  // Google Search Console "HTML tag" verification token (the content="..." value only).
+  googleSiteVerification: (env.GOOGLE_SITE_VERIFICATION || "").trim(),
   trustProxy: env.TRUST_PROXY ? (Number.isFinite(Number(env.TRUST_PROXY)) ? Number(env.TRUST_PROXY) : env.TRUST_PROXY) : false,
 };
 
