@@ -21,7 +21,9 @@ export async function initDb(): Promise<DB> {
     const { Pool } = await import("pg");
     const { drizzle } = await import("drizzle-orm/node-postgres");
     const { migrate } = await import("drizzle-orm/node-postgres/migrator");
-    const pool = new Pool({ connectionString: config.databaseUrl, max: 10 });
+    // Honour channel_binding=require (Neon adds it); pg parses but otherwise ignores it.
+    const enableChannelBinding = /[?&]channel_binding=require(&|$)/.test(config.databaseUrl);
+    const pool = new Pool({ connectionString: config.databaseUrl, max: 10, enableChannelBinding });
     const db = drizzle(pool, { schema });
     await migrate(db, { migrationsFolder: MIGRATIONS });
     dbInstance = db as unknown as DB;
