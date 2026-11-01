@@ -22,7 +22,7 @@ export async function api<T = unknown>(path: string, opts: Options = {}): Promis
     signal: opts.signal,
   });
   const text = await res.text();
-  let data: unknown = null;
+  let data: unknown;
   try {
     data = text ? JSON.parse(text) : null;
   } catch {

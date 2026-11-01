@@ -1,23 +1,7 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { api, ApiError } from "./api";
-
-export type Role = "student" | "teacher" | "admin";
-export type User = { id: number; name: string; email: string; role: Role };
-
-type AuthState = {
-  user: User | null;
-  loading: boolean;
-  login: (email: string, password: string) => Promise<User>;
-  /** Returns the signed-in user, or null when the account needs administrator approval. */
-  register: (body: Record<string, unknown>) => Promise<User | null>;
-  logout: () => Promise<void>;
-  refresh: () => Promise<void>;
-};
-
-const AuthContext = createContext<AuthState | null>(null);
-
-export const homeFor = (role: Role) => (role === "student" ? "/student" : role === "teacher" ? "/teacher" : "/admin");
+import { AuthContext, type AuthState, type User } from "./auth-context";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -35,7 +19,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    refresh()
+    // Initial session check; state is only set in the async callbacks.
+    api<{ user: User | null }>("/auth/me")
+      .then((r) => setUser(r.user))
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
     // A 401 from any API call (expired session, deactivated account) signs the user out.
@@ -45,7 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
     window.addEventListener("edugap:unauthorized", onUnauthorized);
     return () => window.removeEventListener("edugap:unauthorized", onUnauthorized);
-  }, [refresh, qc]);
+  }, [qc]);
 
   const value = useMemo<AuthState>(
     () => ({
@@ -75,10 +61,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
-  return ctx;
 }

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Compass } from "lucide-react";
-import { buttonClass } from "@/components/ui";
-import { useAuth, homeFor } from "@/lib/auth";
+import { buttonClass } from "@/components/button-styles";
+import { useAuth, homeFor } from "@/lib/auth-context";
 
 export default function NotFound() {
   const { user } = useAuth();

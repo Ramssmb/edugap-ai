@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Lint, types, tests, build (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  postgres:
+    name: Tests on PostgreSQL
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: edugap
+          POSTGRES_PASSWORD: edugap
+          POSTGRES_DB: edugap_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U edugap"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://edugap:edugap@localhost:5432/edugap_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+  docker:
+    name: Docker image smoke test
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t edugap-ai:ci .
+      - name: Start container (embedded database, demo data)
+        run: |
+          docker run -d --name edugap -p 8080:8080 \
+            -e JWT_SECRET="$(openssl rand -hex 32)" \
+            -e SEED_DEMO_DATA=true \
+            edugap-ai:ci
+      - name: Wait for health check
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:8080/api/health; then exit 0; fi
+            sleep 2
+          done
+          docker logs edugap
+          exit 1
+      - name: Smoke test
+        run: |
+          set -e
+          curl -fsS -o /dev/null http://localhost:8080/
+          curl -fsS -o /dev/null http://localhost:8080/student/progress
+          status=$(curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:8080/api/auth/login \
+            -H "Content-Type: application/json" -H "X-Requested-With: edugap" \
+            -d '{"email":"aarav@edugap.demo","password":"EduGap@2026"}')
+          test "$status" = "200"
+          test "$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api/student/dashboard)" = "401"
+      - name: Container logs
+        if: always()
+        run: docker logs edugap || true

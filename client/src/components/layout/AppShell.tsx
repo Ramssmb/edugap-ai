@@ -19,7 +19,7 @@ import {
   Library,
   School,
 } from "lucide-react";
-import { useAuth, type Role } from "@/lib/auth";
+import { useAuth, type Role } from "@/lib/auth-context";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/ui";
@@ -155,8 +155,15 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 export function AppShell() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
-  useEffect(() => {
+  // Close the mobile drawer whenever the route changes (including back/forward).
+  const [path, setPath] = useState(location.pathname);
+  if (path !== location.pathname) {
+    setPath(location.pathname);
     setOpen(false);
+  }
+  useEffect(() => {
+    // Block body on purpose: scrollTo returns a Promise in newer browsers, and an effect
+    // must not return anything but a cleanup function.
     window.scrollTo({ top: 0 });
   }, [location.pathname]);
 

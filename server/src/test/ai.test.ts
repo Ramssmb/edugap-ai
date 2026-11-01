@@ -49,7 +49,7 @@ beforeAll(async () => {
   config.anthropicApiKey = "sk-ant-test-key"; // test mode normally forces offline
   const dbm = await import("../db/index.js");
   await dbm.initDb();
-  await (await import("../db/seed.js")).seed({ reset: false });
+  await (await import("../db/seed.js")).seed({ reset: true });
   app = (await import("../app.js")).createApp();
   mod = { db: dbm.db, schema: dbm.schema, closeDb: dbm.closeDb };
 });

@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Pencil, Trash2, BookOpen, HelpCircle, Library, FolderPlus } from "lucide-react";
 import { toast } from "sonner";
@@ -63,9 +63,12 @@ function NameModal({ title, initial, onSave, onClose, pending, fields, withColor
 function LessonModal({ topicId, lessonId, onClose }: { topicId: number; lessonId: number | "new"; onClose: () => void }) {
   const existing = useQuery({ queryKey: ["admin-lesson", lessonId], queryFn: () => api<LessonFull>(`/admin/lessons/${lessonId}`), enabled: lessonId !== "new" });
   const [v, setV] = useState({ title: "", summary: "", content: "", keyPoints: "", example: "", durationMinutes: "10", level: "easy" });
-  useEffect(() => {
-    if (existing.data) setV({ title: existing.data.title, summary: existing.data.summary, content: existing.data.content, keyPoints: existing.data.keyPoints.join("\n"), example: existing.data.example, durationMinutes: String(existing.data.durationMinutes), level: existing.data.level });
-  }, [existing.data]);
+  // Fill the form once the lesson being edited has loaded.
+  const [loadedFrom, setLoadedFrom] = useState<LessonFull | undefined>(undefined);
+  if (existing.data && existing.data !== loadedFrom) {
+    setLoadedFrom(existing.data);
+    setV({ title: existing.data.title, summary: existing.data.summary, content: existing.data.content, keyPoints: existing.data.keyPoints.join("\n"), example: existing.data.example, durationMinutes: String(existing.data.durationMinutes), level: existing.data.level });
+  }
   const save = useSave(
     (body: Record<string, unknown>) => (lessonId === "new" ? api("/admin/lessons", { body }) : api(`/admin/lessons/${lessonId}`, { method: "PATCH", body })),
     lessonId === "new" ? "Lesson published" : "Lesson updated",

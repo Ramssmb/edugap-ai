@@ -19,8 +19,8 @@ import {
   BookOpen,
 } from "lucide-react";
 import { Logo } from "@/components/layout/AppShell";
-import { buttonClass } from "@/components/ui";
-import { useAuth, homeFor } from "@/lib/auth";
+import { buttonClass } from "@/components/button-styles";
+import { useAuth, homeFor } from "@/lib/auth-context";
 
 function Nav() {
   const { user } = useAuth();

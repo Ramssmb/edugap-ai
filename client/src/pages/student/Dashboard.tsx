@@ -1,18 +1,13 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Flame, ClipboardCheck, BookOpen, Target, ArrowRight, CheckCircle2, Circle, Calculator, FlaskConical, BookOpenText, Sparkles, CalendarClock, Trophy, AlertTriangle, TrendingUp } from "lucide-react";
+import { Flame, ClipboardCheck, BookOpen, Target, ArrowRight, CheckCircle2, Circle, Sparkles, CalendarClock, Trophy, AlertTriangle, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { api, errorMessage } from "@/lib/api";
 import type { Attempt, Gap, StudentDashboard } from "@/lib/types";
 import { Card, CardHeader, PageHeader, StatCard, MasteryRing, MasteryBar, Trend, PageSkeleton, ErrorState, EmptyState, Badge, ButtonLink, Button, Progress } from "@/components/ui";
+import { subjectIcon } from "@/components/subject-icon";
 import { cn, subjectColor, pct, formatDate, dueLabel, STATUS_META } from "@/lib/utils";
 
-const SUBJECT_ICON: Record<string, React.ReactNode> = {
-  Calculator: <Calculator className="h-5 w-5" />,
-  FlaskConical: <FlaskConical className="h-5 w-5" />,
-  BookOpenText: <BookOpenText className="h-5 w-5" />,
-};
-export const subjectIcon = (icon: string) => SUBJECT_ICON[icon] ?? <BookOpen className="h-5 w-5" />;
 
 function TopicColumn({ title, items, status, icon }: { title: string; items: Gap[]; status: Gap["status"]; icon: React.ReactNode }) {
   const m = STATUS_META[status];

@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Search, UserCog, Users as UsersIcon } from "lucide-react";
 import { toast } from "sonner";
 import { api, ApiError, errorMessage } from "@/lib/api";
-import { useAuth } from "@/lib/auth";
+import { useAuth } from "@/lib/auth-context";
 import { Card, PageHeader, PageSkeleton, ErrorState, Button, Input, Select, Modal, Field, Avatar, Badge, EmptyState, Tabs } from "@/components/ui";
 import { timeAgo } from "@/lib/utils";
 

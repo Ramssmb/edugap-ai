@@ -22,7 +22,7 @@ async function answerKey(questionIds: number[]) {
 
 beforeAll(async () => {
   await initDb();
-  await seed({ reset: false });
+  await seed({ reset: true });
 });
 afterAll(async () => {
   await closeDb();

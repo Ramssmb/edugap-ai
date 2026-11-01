@@ -8,7 +8,7 @@ import type { Gap, Subject } from "@/lib/types";
 import { Card, Button, Select, Badge, SourceBadge } from "@/components/ui";
 import { Markdown } from "@/lib/markdown";
 import { cn, LANGUAGES } from "@/lib/utils";
-import { useAuth } from "@/lib/auth";
+import { useAuth } from "@/lib/auth-context";
 
 type Msg = { role: "user" | "assistant"; content: string; source?: "ai" | "rules" };
 const STORE = "edugap:tutor";

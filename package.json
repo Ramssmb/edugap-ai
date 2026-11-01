@@ -3,6 +3,19 @@
   "version": "1.0.0",
   "private": true,
   "description": "AI-powered personalized learning and knowledge gap detection platform",
+  "license": "MIT",
+  "author": "Maloth Bhavsingh",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ramssmb/edugap-ai.git"
+  },
+  "homepage": "https://github.com/Ramssmb/edugap-ai#readme",
+  "bugs": {
+    "url": "https://github.com/Ramssmb/edugap-ai/issues"
+  },
+  "engines": {
+    "node": ">=20.19"
+  },
   "workspaces": [
     "server",
     "client"
@@ -14,9 +27,18 @@
     "seed": "npm run seed -w server",
     "test": "npm run test -w server",
     "typecheck": "npm run typecheck -w server && npm run typecheck -w client",
-    "create-admin": "npm run create-admin -w server"
+    "create-admin": "npm run create-admin -w server",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "check": "npm run lint && npm run typecheck && npm test && npm run build"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "@eslint/js": "^10.0.1",
+    "concurrently": "^9.1.2",
+    "eslint": "^10.14.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.7",
+    "globals": "^17.14.0",
+    "typescript-eslint": "^8.72.1"
   }
 }

@@ -6,7 +6,7 @@ import type { RosterStudent } from "@/lib/types";
 import { Card, CardHeader, PageHeader, PageSkeleton, ErrorState, StatCard, Avatar, Badge, MasteryBar, EmptyState, ButtonLink } from "@/components/ui";
 import { CountColumns } from "@/components/charts";
 import { pct, masteryColor, cn, statusFor, STATUS_META } from "@/lib/utils";
-import { useAuth } from "@/lib/auth";
+import { useAuth } from "@/lib/auth-context";
 
 type Overview = {
   classes: { id: number; name: string; grade: number }[];

@@ -6,7 +6,7 @@ import { api, errorMessage } from "@/lib/api";
 import type { Attempt, Subject, Topic } from "@/lib/types";
 import { Card, PageHeader, PageSkeleton, ErrorState, Button, Badge, StatusBadge, MasteryBar, EmptyState } from "@/components/ui";
 import { cn, subjectColor, dueLabel, pct, formatDate, type GapStatus } from "@/lib/utils";
-import { subjectIcon } from "./Dashboard";
+import { subjectIcon } from "@/components/subject-icon";
 
 type Data = {
   subjects: (Omit<Subject, "topics"> & { topics: (Topic & { mastery: number | null; status: GapStatus | null })[] })[];

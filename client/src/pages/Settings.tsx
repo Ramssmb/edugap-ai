@@ -1,9 +1,9 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { User, KeyRound, Globe, Target } from "lucide-react";
 import { toast } from "sonner";
 import { api, ApiError, errorMessage } from "@/lib/api";
-import { useAuth } from "@/lib/auth";
+import { useAuth } from "@/lib/auth-context";
 import { Card, CardHeader, PageHeader, PageSkeleton, ErrorState, Button, Field, Input, Select, Textarea, Avatar, Badge } from "@/components/ui";
 import { LANGUAGES, formatDate } from "@/lib/utils";
 
@@ -31,9 +31,12 @@ export default function Settings() {
   const [pw, setPw] = useState({ currentPassword: "", newPassword: "", confirm: "" });
   const [pwFields, setPwFields] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    if (data) setForm({ name: data.name, preferredLanguage: data.preferredLanguage ?? "en", dailyQuestionGoal: String(data.dailyQuestionGoal ?? 10), department: data.department ?? "", bio: data.bio ?? "" });
-  }, [data]);
+  // Load the form from the profile whenever a fresh copy arrives (first load, or after saving).
+  const [loadedFrom, setLoadedFrom] = useState<Profile | undefined>(undefined);
+  if (data && data !== loadedFrom) {
+    setLoadedFrom(data);
+    setForm({ name: data.name, preferredLanguage: data.preferredLanguage ?? "en", dailyQuestionGoal: String(data.dailyQuestionGoal ?? 10), department: data.department ?? "", bio: data.bio ?? "" });
+  }
 
   const save = useMutation({
     mutationFn: () =>

@@ -1,5 +1,12 @@
 # EduGap AI
 
+[![CI](https://github.com/Ramssmb/edugap-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/Ramssmb/edugap-ai/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![Node](https://img.shields.io/badge/node-%E2%89%A520.19-339933?logo=node.js&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
+
 **Identify Learning Gaps. Personalize Learning. Improve Futures.**
 
 EduGap AI finds *exactly* what each student doesn't understand yet — down to the concept behind every wrong answer — and builds a personal path to fix it. Teachers get a live view of their class; administrators manage users, classes and the curriculum.
@@ -8,11 +15,13 @@ EduGap AI finds *exactly* what each student doesn't understand yet — down to t
 - **Teachers** see a class heatmap, the most common misconceptions, students needing attention, per-student reports, and can create and assign assessments with question-level analysis.
 - **Administrators** manage users and roles (including approving teacher accounts), classes, subjects, topics, lessons and the question bank, and monitor platform statistics and activity.
 
+**Contents:** [Quick start](#quick-start) · [Docker](#docker) · [Demo accounts](#demo-accounts) · [Architecture](#architecture) · [Testing](#testing-results) · [Known limitations](#known-limitations) · [Contributing](#contributing)
+
 ---
 
 ## Quick start
 
-Requirements: **Node.js 20+** (tested on Node 24). No database server or API key is needed for the demo.
+Requirements: **Node.js 20.19+** (`.nvmrc` pins 24; CI tests 22 and 24). No database server or API key is needed for the demo.
 
 ```bash
 npm install
@@ -24,11 +33,23 @@ Open **http://localhost:5180**. On first start the server creates an embedded Po
 | Command | What it does |
 |---|---|
 | `npm run dev` | API on :4000 + web app on :5180 (hot reload) |
-| `npm test` | Server unit + API integration tests (in-memory database) |
+| `npm test` | All tests: engine, API, functional audit, AI integration (in-memory database) |
+| `npm run lint` | ESLint (TypeScript + React hooks rules); `lint:fix` to auto-fix |
+| `npm run check` | Everything CI runs: lint, typecheck, tests, build |
 | `npm run seed` | Reset the database to fresh demo data (**stop `npm run dev` first** — the embedded database is single-process; the script refuses to run if it detects the server) |
 | `npm run build` then `npm start` | Production build; one Node server serves the API and the built web app |
 | `npm run create-admin` | Create the first admin for a real deployment (`ADMIN_EMAIL`, `ADMIN_NAME`, `ADMIN_PASSWORD`) |
 | `npm run typecheck` | Type-check server and client |
+
+### Docker
+
+Runs the production build with PostgreSQL:
+
+```bash
+JWT_SECRET=$(openssl rand -hex 32) docker compose up --build
+```
+
+Open **http://localhost:8080**. The compose file sets `SEED_DEMO_DATA=true` so the demo accounts work; remove it for a real deployment. The image (`Dockerfile`) is multi-stage, runs as a non-root user, and has a health check. CI builds it and smoke-tests it on every push. Production cookies are `Secure`, so any host other than `localhost` must be served over HTTPS (see [SECURITY.md](SECURITY.md)).
 
 ### Environment
 
@@ -166,3 +187,13 @@ See **[docs/QA-REPORT.md](docs/QA-REPORT.md)** and **[docs/FUNCTIONAL-AUDIT.md](
 - Sessions are stateless JWTs (12 h). Logout clears the cookie; immediate server-side revocation happens on password change/reset, deactivation or role change.
 - No email delivery (password reset is admin-driven), no file uploads in lessons, and no per-teacher subject assignment (teachers own classes).
 - The curriculum is Grade 8 Maths, Science and English; admins can add more through the content manager.
+
+---
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, conventions and the checks every pull request must pass, and [CHANGELOG.md](CHANGELOG.md) for release notes. Report security issues privately as described in [SECURITY.md](SECURITY.md). This project follows a [code of conduct](CODE_OF_CONDUCT.md).
+
+## License
+
+[MIT](LICENSE) © 2026 Ramssmb

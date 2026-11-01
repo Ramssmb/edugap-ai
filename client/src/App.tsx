@@ -1,6 +1,6 @@
 import { lazy, Suspense, type ReactNode } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
-import { useAuth, homeFor, type Role } from "@/lib/auth";
+import { useAuth, homeFor, type Role } from "@/lib/auth-context";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageSkeleton, Spinner } from "@/components/ui";
 import Landing from "@/pages/Landing";

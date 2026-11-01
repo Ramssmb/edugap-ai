@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Logo } from "@/components/layout/AppShell";
 import { Button, Field, Input, Select } from "@/components/ui";
 import { api, ApiError, errorMessage } from "@/lib/api";
-import { useAuth, homeFor } from "@/lib/auth";
+import { useAuth, homeFor } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
 
 function AuthLayout({ children, title, subtitle }: { children: ReactNode; title: string; subtitle: ReactNode }) {
