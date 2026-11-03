@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Ramssmb/edugap-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/Ramssmb/edugap-ai/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![Node](https://img.shields.io/badge/node-%E2%89%A520.19-339933?logo=node.js&logoColor=white)
+![Node](https://img.shields.io/badge/node-%E2%89%A522-339933?logo=node.js&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
@@ -21,7 +21,7 @@ EduGap AI finds *exactly* what each student doesn't understand yet — down to t
 
 ## Quick start
 
-Requirements: **Node.js 20.19+** (`.nvmrc` pins 24; CI tests 22 and 24). No database server or API key is needed for the demo.
+Requirements: **Node.js 22+** (`.nvmrc` pins 24; CI tests 22, 24 and 26; the Docker image runs 26). No database server or API key is needed for the demo.
 
 ```bash
 npm install
@@ -37,6 +37,8 @@ Open **http://localhost:5180**. On first start the server creates an embedded Po
 | `npm run lint` | ESLint (TypeScript + React hooks rules); `lint:fix` to auto-fix |
 | `npm run check` | Everything CI runs: lint, typecheck, tests, build |
 | `npm run seed` | Reset the database to fresh demo data (**stop `npm run dev` first** — the embedded database is single-process; the script refuses to run if it detects the server) |
+
+If the local embedded database is ever damaged (for example after the dev server was force-killed, or by a sync tool such as OneDrive touching its files), the server says so on startup: stop it, delete `server/.data/pglite`, and start again to recreate the demo data. Keeping the project outside a synced folder avoids the problem.
 | `npm run build` then `npm start` | Production build; one Node server serves the API and the built web app |
 | `npm run create-admin` | Create the first admin for a real deployment (`ADMIN_EMAIL`, `ADMIN_NAME`, `ADMIN_PASSWORD`) |
 | `npm run typecheck` | Type-check server and client |

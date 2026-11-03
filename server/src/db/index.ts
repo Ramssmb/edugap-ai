@@ -39,7 +39,19 @@ export async function initDb(): Promise<DB> {
       client = new PGlite(config.pgliteDir);
     }
     const db = drizzle(client, { schema });
-    await migrate(db, { migrationsFolder: MIGRATIONS });
+    try {
+      await migrate(db, { migrationsFolder: MIGRATIONS });
+    } catch (err) {
+      // The embedded database is a set of local files; a hard kill mid-write (or a sync
+      // tool such as OneDrive touching them) can leave them unreadable.
+      if (config.pgliteDir !== "memory")
+        throw new Error(
+          `The local database in ${config.pgliteDir} could not be opened (it may be damaged after the server was stopped abruptly). ` +
+            "Stop the server, delete that folder, and start again to recreate the demo data.",
+          { cause: err },
+        );
+      throw err;
+    }
     dbInstance = db as unknown as DB;
     closeFn = () => client.close();
   }

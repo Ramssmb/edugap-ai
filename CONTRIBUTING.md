@@ -4,7 +4,7 @@ Thanks for helping improve EduGap AI. This guide covers local setup, the checks 
 
 ## Local setup
 
-Requirements: Node.js 20.19+ (the version in `.nvmrc` is recommended). No database server or API key is needed.
+Requirements: Node.js 22+ (the version in `.nvmrc` is recommended). No database server or API key is needed.
 
 ```bash
 npm install
@@ -15,7 +15,7 @@ The first start creates an embedded PostgreSQL database in `server/.data/` and l
 
 ## Before you open a pull request
 
-Run the full check. CI runs the same steps on Node 22 and 24, runs the tests again on a real PostgreSQL server, and builds and smoke-tests the Docker image.
+Run the full check. CI runs the same steps on Node 22, 24 and 26, runs the tests again on a real PostgreSQL server, and builds and smoke-tests the Docker image.
 
 ```bash
 npm run check      # lint + typecheck + tests + build
