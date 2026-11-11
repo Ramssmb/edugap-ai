@@ -203,6 +203,63 @@ See **[docs/QA-REPORT.md](docs/QA-REPORT.md)** and **[docs/FUNCTIONAL-AUDIT.md](
 - The curriculum is Grade 8 Maths, Science and English; admins can add more through the content manager.
 
 ---
+BharatCode
+==========
+
+Project:     EduGap AI
+Tagline:     Identify Learning Gaps. Personalize Learning. Improve Futures.
+Repository:  https://github.com/Ramssmb/edugap-ai
+Author:      Ramssmb
+License:     MIT
+
+What it is
+----------
+EduGap AI is an AI-powered personalized learning and knowledge gap detection
+platform. It finds exactly which concepts a student has not understood yet
+(down to the concept behind each wrong answer) and builds a personal path to
+fix them. Teachers get a live view of their class; administrators manage
+users, classes and curriculum.
+
+Who it serves
+-------------
+- Students:        adaptive assessments, weak/needs-improvement/strong topics,
+                   personalised plan (lessons + targeted practice), multilingual
+                   AI tutor (English, Hindi, Punjabi, Telugu), progress charts.
+- Teachers:        class heatmap, common misconceptions, students needing
+                   attention, per-student reports, assessment creation.
+- Administrators:  user/role management (incl. teacher approval), classes,
+                   subjects, topics, lessons, question bank, platform stats.
+
+How gap detection works
+-----------------------
+- Every question is tagged with topic, difficulty and the concept it tests.
+- Mastery per topic = difficulty- and recency-weighted share of correct answers
+  over the student's 8 most recent answers on that topic.
+- Classification: >=75% strong, 50-74% needs improvement, <50% weak.
+- Recommendations are regenerated after every attempt and lesson, weakest
+  topic first, each with a data-backed reason.
+
+Tech stack
+----------
+- Client:  React 19, TypeScript, Vite, Tailwind CSS v4, TanStack Query, Recharts
+- Server:  Node.js, Express 5, TypeScript, Drizzle ORM, PostgreSQL (or embedded
+           PGlite for local demo), Zod
+- AI:      Claude via @anthropic-ai/sdk (server-side only), with a deterministic
+           offline fallback for every AI feature
+- Deploy:  Docker (multi-stage, non-root), Render Blueprint, Neon PostgreSQL
+
+Run locally
+-----------
+  npm install
+  npm run dev        -> http://localhost:5180
+  npm test           -> 70 tests (engine, API, functional audit, AI integration)
+
+Demo login (see README for full list): aarav@edugap.demo (student)
+
+Focus for India
+---------------
+Built around Grade 8 Maths, Science and English with Hindi, Punjabi and
+Telugu support, and a default school timezone of Asia/Kolkata.
 
 ## Contributing
 
